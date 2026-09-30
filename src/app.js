@@ -4,6 +4,9 @@ const authRoutes = require('./routes/authRoutes');
 const machineRoutes = require('./routes/machineRoutes');
 const breakdownRoutes = require('./routes/breakdownRoutes');
 
+const AppError = require('./utils/AppError');
+const { globalErrorHandler } = require('./middlewares/errorMiddleware');
+
 const app = express();
 
 // Middlewares globaux
@@ -22,5 +25,11 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+app.use((req, res, next) => {
+    next(new AppError(`Route ${req.originalUrl} introuvable sur cette API`, 404));
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;
