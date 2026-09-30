@@ -7,6 +7,7 @@ const {
   updateMachine,
   deleteMachine
 } = require('../controllers/machineController');
+const { getMachineBreakdowns } = require('../controllers/breakdownController');
 const { authenticateJWT } = require('../middlewares/authMiddleware');
 
 router.use(authenticateJWT);
@@ -14,6 +15,9 @@ router.use(authenticateJWT);
 router.route('/')
   .post(createMachine)
   .get(getMachines);
+
+
+router.get('/:id/breakdowns', getMachineBreakdowns);
 
 router.route('/:id')
   .get(getMachineById)
