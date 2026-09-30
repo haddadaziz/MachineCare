@@ -1,0 +1,10 @@
+# Dépendances
+node_modules/
+
+# Variables d'environnement sensibles
+.env
+
+# Logs & OS
+npm-debug.log*
+.DS_Store
+Thumbs.db
