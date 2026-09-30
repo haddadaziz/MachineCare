@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "MachineCare API - Collection Complète",
+    "description": "Collection de tests pour l'API REST industrielle MachineCare (Cycle nominal et cas limites)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "machineId", "value": "", "type": "string" },
+    { "key": "breakdownId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "0. Healthcheck",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "1. Authentification",
+      "item": [
+        {
+          "name": "Login Admin (Seed)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@machinecare.com\",\n  \"password\": \"Admin1234!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Nouvel Utilisateur",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sami Technicien\",\n  \"email\": \"sami@machinecare.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"technicien\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Consulter Profil (GET /me)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Modifier Profil (PUT /me)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Superviseur Atelier Principal\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Parc des Machines",
+      "item": [
+        {
+          "name": "Créer une Machine (POST)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/machines",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Laminoir Haute Pression\",\n  \"reference\": \"LAM-001\",\n  \"atelier\": \"Atelier Métallurgie\",\n  \"etat\": \"disponible\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Tester Conflit Référence Doublon (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/machines",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Autre Laminoir\",\n  \"reference\": \"LAM-001\",\n  \"atelier\": \"Atelier B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Lister les Machines (avec filtres)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/machines?atelier=Métallurgie&etat=disponible",
+              "host": ["{{baseUrl}}"],
+              "path": ["machines"],
+              "query": [
+                { "key": "atelier", "value": "Métallurgie" },
+                { "key": "etat", "value": "disponible" }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Détails d'une Machine",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/machines/{{machineId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Modifier une Machine",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/machines/{{machineId}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Laminoir Haute Pression Révisé\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Supprimer une Machine",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/machines/{{machineId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Cycle de Vie des Pannes",
+      "item": [
+        {
+          "name": "Déclarer une Panne (POST)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/breakdowns",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"machineId\": \"{{machineId}}\",\n  \"description\": \"Vibration anormale de la broche principale\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Lister les Pannes (Filtre statut)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/breakdowns?statut=en attente",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Historique des Pannes par Machine",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/machines/{{machineId}}/breakdowns",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Passer Panne 'en cours'",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/breakdowns/{{breakdownId}}/status",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"en cours\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Clôturer Panne avec Note de Résolution (Obligatoire)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/breakdowns/{{breakdownId}}/status",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"resolu\",\n  \"noteResolution\": \"Remplacement des roulements coniques et recalibrage\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Robustesse & Gestion d'Erreurs",
+      "item": [
+        {
+          "name": "Test 401 - Accès sans token",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/machines"
+          }
+        },
+        {
+          "name": "Test 400 - ID MongoDB invalide",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/machines/identifiantInvalide123",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Test 404 - Route inexistante",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/route-introuvable"
+          }
+        }
+      ]
+    }
+  ]
+}
